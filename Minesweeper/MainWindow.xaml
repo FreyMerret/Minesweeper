@@ -8,7 +8,7 @@
         Title="Minesweeper" Height="400" Width="330" ResizeMode="NoResize">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="70"></RowDefinition>
+            <RowDefinition Height="80"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -16,13 +16,39 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Button Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Click="StartNewGame_Click" Width="40" Height="40">Start</Button>
         <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
             <RadioButton x:Name="EasyRB" GroupName="DifficultyLevel" Content="Easy" IsChecked="True"/>
             <RadioButton x:Name="NormalRB" GroupName="DifficultyLevel" Content="Normal" />
             <RadioButton x:Name="HardRB" GroupName="DifficultyLevel" Content="Hard" />
             <RadioButton x:Name="ImpossibleRB" GroupName="DifficultyLevel" Content="Impossible" />
+            <RadioButton x:Name="JokeRB" GroupName="DifficultyLevel" Content="Joke"/>
         </StackPanel>
+        <Button Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Click="StartNewGame_Click" Width="40" Height="40">Start</Button>
+
+        <Grid Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <RadioButton Grid.Row="0" Grid.ColumnSpan="2" x:Name="CastomRB" GroupName="DifficultyLevel" Content="Castom" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0">Width</TextBlock>
+            <TextBox x:Name="CastomWidthTextBox"  Grid.Row="1" Grid.Column="1" Width="40"></TextBox>
+
+            <TextBlock Grid.Row="2" Grid.Column="0">Height</TextBlock>
+            <TextBox x:Name="CastomHeightTextBox" Grid.Row="2" Grid.Column="1" Width="40"></TextBox>
+
+            <TextBlock Grid.Row="3" Grid.Column="0">Mines %</TextBlock>
+            <TextBox x:Name="CastomMinesPercentTextBox" Grid.Row="3" Grid.Column="1" Width="40"></TextBox>
+
+        </Grid>
         <Grid Grid.Row="1" Grid.ColumnSpan="3" Margin="8">
             <Border BorderThickness="1" BorderBrush="CadetBlue" Background="DarkGray">
                 <Grid x:Name="PlayingField"/>

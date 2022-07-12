@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -22,13 +23,36 @@ public partial class MainWindow : Window
     private void StartNewGame()
     {
         if (EasyRB.IsChecked == true)
-            minesweeper = new MyMinesweeper(10, 10, DifficultyLevel.Easy);
+            minesweeper = new MyMinesweeper(DifficultyLevel.Easy);
         else if (NormalRB.IsChecked == true)
-            minesweeper = new MyMinesweeper(15, 15, DifficultyLevel.Normal);
+            minesweeper = new MyMinesweeper(DifficultyLevel.Normal);
         else if (HardRB.IsChecked == true)
-            minesweeper = new MyMinesweeper(20, 20, DifficultyLevel.Hard);
+            minesweeper = new MyMinesweeper(DifficultyLevel.Hard);
         else if (ImpossibleRB.IsChecked == true)
-            minesweeper = new MyMinesweeper(25, 25, DifficultyLevel.Impossible);
+            minesweeper = new MyMinesweeper(DifficultyLevel.Impossible);
+        else if (CastomRB.IsChecked == true)
+        {
+            try
+            {
+                Int32 castomWidth = Convert.ToInt32(CastomWidthTextBox.Text);
+                Int32 castomHeight = Convert.ToInt32(CastomHeightTextBox.Text);
+                Int32 castomMinesPercent = Convert.ToInt32(CastomMinesPercentTextBox.Text);
+
+                minesweeper = new MyMinesweeper(castomWidth, castomHeight, castomMinesPercent);
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show("Invalid information was inputed");
+                return;
+            } 
+            catch(Exception e)
+            {
+                MessageBox.Show(e.Message);
+                return;
+            }
+        }            
+        else if (JokeRB.IsChecked == true)
+            minesweeper = new MyMinesweeper(DifficultyLevel.Impossible);    //todo
 
         minesweeper.GenerateGame();
 
@@ -49,13 +73,13 @@ public partial class MainWindow : Window
                     else                                                        //иначе ставим число мин вокруг
                     {
                         label.Content = minesweeper.mines[i, j];
-                        label.Foreground = new SolidColorBrush(minesweeper.ColorOfNumberMinesAround[minesweeper.mines[i, j]]);
+                        label.Foreground = new SolidColorBrush(MyMinesweeper.ColorOfNumberMinesAround[minesweeper.mines[i, j]]);
                     }
                     label.VerticalAlignment = VerticalAlignment.Center;
                     label.HorizontalAlignment = HorizontalAlignment.Center;
 
-                    Grid.SetRow(label, i);
-                    Grid.SetColumn(label, j);
+                    Grid.SetColumn(label, i);
+                    Grid.SetRow(label, j);
                     PlayingField.Children.Add(label);
                 }
 
@@ -65,8 +89,8 @@ public partial class MainWindow : Window
                 b.Click += (source, e) => MyClick(ii, jj);
                 //b.Background = Brushes.Gray;
 
-                Grid.SetRow(b, i);
-                Grid.SetColumn(b, j);
+                Grid.SetColumn(b, i);
+                Grid.SetRow(b, j);
                 PlayingField.Children.Add(b);
 
                 minesweeper.links[i, j] = b;
@@ -75,7 +99,7 @@ public partial class MainWindow : Window
 
     private void GeneratePlayingField(int width, int height)
     {
-        this.Height = height * 30 + 100;
+        this.Height = height * 30 + 110;
         this.Width = width * 30 + 30;
         PlayingField.Children.Clear();
         PlayingField.RowDefinitions.Clear();
@@ -102,8 +126,8 @@ public partial class MainWindow : Window
                 border.BorderThickness = new Thickness(1);
                 border.BorderBrush = Brushes.Gray;
 
-                Grid.SetRow(border, i);
-                Grid.SetColumn(border, j);
+                Grid.SetColumn(border, i);
+                Grid.SetRow(border, j);
                 PlayingField.Children.Add(border);
             }
     }
