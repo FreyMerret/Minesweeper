@@ -2,17 +2,20 @@
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Minesweeper;
 
 public partial class MainWindow : Window
 {
+    public MyMinesweeper minesweeper;
+
     public MainWindow()
     {
         InitializeComponent();
-    }
-    public MyMinesweeper minesweeper;
+        DataContext = new ApplicationViewModel();
+    }    
 
     private void StartNewGame_Click(object sender, RoutedEventArgs e)
     {
@@ -28,31 +31,6 @@ public partial class MainWindow : Window
             minesweeper = new MyMinesweeper(DifficultyLevel.Normal);
         else if (HardRB.IsChecked == true)
             minesweeper = new MyMinesweeper(DifficultyLevel.Hard);
-        else if (ImpossibleRB.IsChecked == true)
-            minesweeper = new MyMinesweeper(DifficultyLevel.Impossible);
-        else if (CastomRB.IsChecked == true)
-        {
-            try
-            {
-                Int32 castomWidth = Convert.ToInt32(CastomWidthTextBox.Text);
-                Int32 castomHeight = Convert.ToInt32(CastomHeightTextBox.Text);
-                Int32 castomMinesPercent = Convert.ToInt32(CastomMinesPercentTextBox.Text);
-
-                minesweeper = new MyMinesweeper(castomWidth, castomHeight, castomMinesPercent);
-            }
-            catch (FormatException)
-            {
-                MessageBox.Show("Invalid information was inputed");
-                return;
-            } 
-            catch(Exception e)
-            {
-                MessageBox.Show(e.Message);
-                return;
-            }
-        }            
-        else if (JokeRB.IsChecked == true)
-            minesweeper = new MyMinesweeper(DifficultyLevel.Impossible);    //todo
 
         minesweeper.GenerateGame();
 
@@ -84,11 +62,7 @@ public partial class MainWindow : Window
                 }
 
                 var b = new Button();
-                int ii = i;//чертовы замыкания
-                int jj = j;
-                b.Click += (source, e) => MyClick(ii, jj);
-                //b.Background = Brushes.Gray;
-
+                b.PreviewMouseLeftButtonUp += (source, e) => MyClick(source, e);
                 Grid.SetColumn(b, i);
                 Grid.SetRow(b, j);
                 PlayingField.Children.Add(b);
@@ -130,6 +104,13 @@ public partial class MainWindow : Window
                 Grid.SetRow(border, j);
                 PlayingField.Children.Add(border);
             }
+    }
+
+    private void MyClick(object sender, RoutedEventArgs e)
+    {
+        Button button = sender as Button;
+        if (button != null)
+            MyClick(Grid.GetColumn(button), Grid.GetRow(button));        
     }
 
     private void MyClick(int i, int j)

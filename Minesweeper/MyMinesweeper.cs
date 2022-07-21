@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -14,7 +16,7 @@ public enum DifficultyLevel : int
     Impossible = 30
 }
 
-public class MyMinesweeper
+public class MyMinesweeper : INotifyPropertyChanged
 {
     public static Dictionary<int, Color> ColorOfNumberMinesAround = new Dictionary<int, Color>
     {
@@ -34,6 +36,16 @@ public class MyMinesweeper
     public int difficultyLevel { get; private set; }
     public int notOpenCellsLeft { get; set; }
     public int minesCount { get; private set; }
+    
+    public int MinesCount
+    {
+        get { return minesCount; }
+        private set
+        {
+            minesCount = value;
+            OnPropertyChanged("MinesCount");
+        }
+    }
     public int[,] mines { get; private set; }
 
     public FrameworkElement[,] links { get; private set; }
@@ -42,6 +54,7 @@ public class MyMinesweeper
     {
         this.width = this.height =  this.difficultyLevel = (int)difficultyLevel;
         this.links = new Button[width, height];
+        MinesCount = (int)difficultyLevel;
     }
 
     public MyMinesweeper(int width, int height, int difficultyLevel)
@@ -120,39 +133,15 @@ public class MyMinesweeper
                 else
                     return -(onlyMines[y - 1, x - 1] + onlyMines[y - 1, x] + onlyMines[y - 1, x + 1] + onlyMines[y, x + 1] + onlyMines[y + 1, x + 1] + onlyMines[y + 1, x] + onlyMines[y + 1, x - 1] + onlyMines[y, x - 1]);
             }
-
-            //if (y == 0)
-            //{
-            //    if (x == 0)
-            //        return -(onlyMines[0, 1] + onlyMines[1, 1] + onlyMines[1, 0]);
-            //    else
-            //    if (x == width - 1)
-            //        return -(onlyMines[0, width - 2] + onlyMines[1, width - 2] + onlyMines[1, width - 1]);
-            //    else
-            //        return -(onlyMines[0, x - 1] + onlyMines[1, x - 1] + onlyMines[1, x] + onlyMines[1, x + 1] + onlyMines[0, x + 1]);
-            //}
-            //else
-            //if (y == height - 1)
-            //{
-            //    if (x == 0)
-            //        return -(onlyMines[height - 1, 1] + onlyMines[height - 2, 1] + onlyMines[height - 2, 0]);
-            //    else
-            //    if (x == width - 1)
-            //        return -(onlyMines[height - 1, width - 2] + onlyMines[height - 2, width - 2] + onlyMines[height - 2, width - 1]);
-            //    else
-            //        return -(onlyMines[height - 1, x - 1] + onlyMines[height - 2, x - 1] + onlyMines[height - 2, x] + onlyMines[height - 2, x + 1] + onlyMines[height - 1, x + 1]);
-            //}
-            //else
-            //{
-            //    if (x == 0)
-            //        return -(onlyMines[y - 1, 0] + onlyMines[y - 1, 1] + onlyMines[y, 1] + onlyMines[y + 1, 1] + onlyMines[y + 1, 0]);
-            //    else
-            //    if (x == width - 1)
-            //        return -(onlyMines[y - 1, width - 1] + onlyMines[y - 1, width - 2] + onlyMines[y, width - 2] + onlyMines[y + 1, width - 2] + onlyMines[y + 1, width - 1]);
-            //    else
-            //        return -(onlyMines[y - 1, x - 1] + onlyMines[y - 1, x] + onlyMines[y - 1, x + 1] + onlyMines[y, x + 1] + onlyMines[y + 1, x + 1] + onlyMines[y + 1, x] + onlyMines[y + 1, x - 1] + onlyMines[y, x - 1]);
-            //}
         }
+
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+    public void OnPropertyChanged([CallerMemberName] string prop = "")
+    {
+        if (PropertyChanged != null)
+            PropertyChanged(this, new PropertyChangedEventArgs(prop));
     }
 }
 
