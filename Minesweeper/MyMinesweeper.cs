@@ -1,22 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Minesweeper;
+namespace MyGame;
 
-public enum DifficultyLevel : int
+public enum DifficultyLevel : int   //цифра указывает процентное количество мин на поле
 {
     Easy = 10,
     Normal = 15,
-    Hard = 25,
-    Impossible = 30
+    Hard = 20
 }
 
-public class MyMinesweeper : INotifyPropertyChanged
+public class MyMinesweeper
 {
     public static Dictionary<int, Color> ColorOfNumberMinesAround = new Dictionary<int, Color>
     {
@@ -34,73 +32,58 @@ public class MyMinesweeper : INotifyPropertyChanged
     public int width { get; private set; }
     public int height { get; private set; }
     public int difficultyLevel { get; private set; }
+
+
     public int notOpenCellsLeft { get; set; }
     public int minesCount { get; private set; }
-    
-    public int MinesCount
-    {
-        get { return minesCount; }
-        private set
-        {
-            minesCount = value;
-            OnPropertyChanged("MinesCount");
-        }
-    }
     public int[,] mines { get; private set; }
-
     public FrameworkElement[,] links { get; private set; }
+
+
+
+
+
+
+
 
     public MyMinesweeper(DifficultyLevel difficultyLevel)
     {
-        this.width = this.height =  this.difficultyLevel = (int)difficultyLevel;
-        this.links = new Button[width, height];
-        MinesCount = (int)difficultyLevel;
-    }
-
-    public MyMinesweeper(int width, int height, int difficultyLevel)
-    {
-        if (width < 10 || height < 10)
-            throw new Exception("Too small playing field");
-        if (width > 30 || height > 30)
-            throw new Exception("Too big playing field");
-        if (difficultyLevel < 5)
-            throw new Exception("Too small mines percent");
-        if (difficultyLevel > 95)
-            throw new Exception("Too big mines percent");
-
-        this.width = width;
-        this.height = height;
-        this.difficultyLevel = difficultyLevel;
+        this.width = this.height = this.difficultyLevel = (int)difficultyLevel;
         this.links = new Button[width, height];
     }
 
-    public void GenerateGame()
+    public void GenerateGame(out List<Label> labels, out List<Button> buttons)
     {
         Random random = new Random(DateTime.Now.Second);
-        int ThresholdValue = difficultyLevel;                       //пороговое значение вероятности появления мины в клетке 
+        minesCount = (int)Math.Round(width * height * ((double)difficultyLevel / 100));
         int[,] onlyMines = new int[width, height];                  //поле на котором будут только мины. Нужно для последующего создания поля с минами и цифрами
         mines = new int[width, height];
-        minesCount = 0;
         notOpenCellsLeft = width * height;
-        for (int i = 0; i < width; i++)
-            for (int j = 0; j < height; j++)
+        for (int i = 0; i < minesCount; i++)                        //устанавливаем мины
+        {
+            do                                                      //пока не найдем пустую клетку для постановки мины, выбираем рандомные клетки
             {
-                if (random.Next(0, 100) <= ThresholdValue)
+                int randomX = random.Next(0, width);
+                int randomY = random.Next(0, height);
+
+                if (onlyMines[randomX, randomY] != -1)
                 {
-                    onlyMines[i, j] = -1;                         //ставим мину
-                    mines[i, j] = -1;
-                    minesCount++;
+                    onlyMines[randomX, randomY] = -1;               //ставим мину
+                    mines[randomX, randomY] = -1;
+                    break;
                 }
             }
+            while (true);
+        }
 
-        for (int i = 0; i < width; i++)
+        for (int i = 0; i < width; i++)                             //считаем количество мин вокруг
             for (int j = 0; j < height; j++)
             {
                 if (mines[i, j] != -1)
                     mines[i, j] = CheckMinesAround(i, j);
             }
 
-        int CheckMinesAround(int y, int x)
+        int CheckMinesAround(int y, int x)                          //функция для подсчета мин вокруг. Вынес ее, чтобы было удобно сворачивать
         {
             if (y == 0)
             {
@@ -135,13 +118,180 @@ public class MyMinesweeper : INotifyPropertyChanged
             }
         }
 
+        labels = new List<Label>();
+        buttons = new List<Button>();
+
+        for (int i = 0; i < width; i++)                             //формируем два списка: с кнопками и с метками, которые лежат под кнопками
+            for (int j = 0; j < height; j++)
+            {
+                if (mines[i, j] != 0)                               //если вокруг данной клетки есть мины или на самой клетке мина
+                {
+                    Label label = new Label()
+                    {
+                        FontWeight = FontWeights.UltraBlack,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    if (mines[i, j] == -1)                          //если на клетке мина, то рисуем мину
+                    {
+                        label.Content = "*";
+                        label.Foreground = new SolidColorBrush(Colors.DarkRed);
+                    }
+                    else                                            //иначе ставим число мин вокруг
+                    {
+                        label.Content = mines[i, j];
+                        label.Foreground = new SolidColorBrush(MyMinesweeper.ColorOfNumberMinesAround[mines[i, j]]);
+                    }
+
+                    Grid.SetColumn(label, i);
+                    Grid.SetRow(label, j);
+                    labels.Add(label);
+                }
+
+                var button = new Button();
+                button.PreviewMouseLeftButtonUp += (source, e) => MyClick(source, e);
+                button.PreviewMouseRightButtonUp += (source, e) => RightButtonClick(source, e);
+                Grid.SetColumn(button, i);
+                Grid.SetRow(button, j);
+                buttons.Add(button);
+                links[i, j] = button;
+            }
+
     }
 
-    public event PropertyChangedEventHandler PropertyChanged;
-    public void OnPropertyChanged([CallerMemberName] string prop = "")
+    private void RightButtonClick(object sender, RoutedEventArgs e)
     {
-        if (PropertyChanged != null)
-            PropertyChanged(this, new PropertyChangedEventArgs(prop));
+        Button button = sender as Button;
+        if (button != null)                     //установка флажка
+        {
+            if (button.Content != "F")
+                button.Content = "F";
+            else
+                button.Content = "";
+        }
+    }
+
+    private void MyClick(object sender, RoutedEventArgs e)
+    {
+        Button button = sender as Button;
+        if (button != null)
+            if (button.Content != "F")
+                MyClick(Grid.GetColumn(button), Grid.GetRow(button));
+    }
+
+    private void MyClick(int i, int j)
+    {
+        if (links[i, j].Visibility == Visibility.Visible)   //открытие ячейки, если она не не открыта. Это сделано так, чтобы при попадении на ячейку, вокруг которой нет мин была возможность открыть ячейки вокруг не утонув в рекурсии
+        {
+            links[i, j].Visibility = Visibility.Hidden;
+            if (mines[i, j] == -1)
+            {
+                GameOver();
+                return;
+            }
+            if (mines[i, j] == 0)
+                ShowAdjacentCells(i, j);                    //открываем соседние ячейки, если вокруг текущей нет мин
+            notOpenCellsLeft--;
+            if (notOpenCellsLeft == minesCount)
+                Win();
+        }
+    }
+
+    private void GameOver()
+    {
+        for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++)
+            {
+                links[x, y].IsEnabled = false;
+                if (mines[x, y] == -1)
+                    links[x, y].Visibility = Visibility.Hidden; //показываем мины
+            }
+    }
+
+    private void Win()
+    {
+        MessageBox.Show("Вы победили!!!");
+        GameOver();
+    }
+
+    private void ShowAdjacentCells(int i, int j)    //открываем соседние клетки, если вокруг клетки i,j нет мин
+    {
+        if (i == 0)                                 //если это первая строка
+        {
+            if (j == 0)                             //и первый столбец, то это левый верхний угол и нужно открыть не все клетки вокруг, чтобы не поймать ошибку. Далее аналогично
+            {
+                MyClick(i + 1, j);
+                MyClick(i, j + 1);
+                MyClick(i + 1, j + 1);
+            }
+            else if (j == height - 1)
+            {
+                MyClick(i, j - 1);
+                MyClick(i + 1, j - 1);
+                MyClick(i + 1, j);
+            }
+            else
+            {
+                MyClick(i, j + 1);
+                MyClick(i + 1, j + 1);
+                MyClick(i + 1, j);
+                MyClick(i + 1, j - 1);
+                MyClick(i, j - 1);
+            }
+        }
+        else if (i == width - 1)        //если последняя строка
+        {
+            if (j == 0)
+            {
+                MyClick(i - 1, j);
+                MyClick(i - 1, j + 1);
+                MyClick(i, j + 1);
+            }
+            else if (j == height - 1)
+            {
+                MyClick(i, j - 1);
+                MyClick(i - 1, j - 1);
+                MyClick(i - 1, j);
+            }
+            else
+            {
+                MyClick(i, j - 1);
+                MyClick(i - 1, j - 1);
+                MyClick(i - 1, j);
+                MyClick(i - 1, j + 1);
+                MyClick(i, j + 1);
+            }
+        }
+        else
+        {
+            if (j == 0)
+            {
+                MyClick(i - 1, j);
+                MyClick(i - 1, j + 1);
+                MyClick(i, j + 1);
+                MyClick(i + 1, j + 1);
+                MyClick(i + 1, j);
+            }
+            else if (j == height - 1)
+            {
+                MyClick(i - 1, j);
+                MyClick(i - 1, j - 1);
+                MyClick(i, j - 1);
+                MyClick(i + 1, j - 1);
+                MyClick(i + 1, j);
+            }
+            else
+            {
+                MyClick(i + 1, j);
+                MyClick(i + 1, j + 1);
+                MyClick(i, j + 1);
+                MyClick(i - 1, j + 1);
+                MyClick(i - 1, j);
+                MyClick(i - 1, j - 1);
+                MyClick(i, j - 1);
+                MyClick(i + 1, j - 1);
+            }
+        }
     }
 }
 

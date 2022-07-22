@@ -1,9 +1,9 @@
-﻿<Window x:Class="Minesweeper.MainWindow"
+﻿<Window x:Class="MyGame.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Minesweeper"
+        xmlns:local="clr-namespace:MyGame"
         mc:Ignorable="d"
         Title="Minesweeper" Height="400" Width="330" ResizeMode="NoResize">
     <Window.Resources>
@@ -123,7 +123,7 @@
     
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="25"></RowDefinition>
+            <RowDefinition Height="20"></RowDefinition>
             <RowDefinition Height="80"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
@@ -133,33 +133,20 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
-        <Menu Grid.ColumnSpan="3" Height="25" VerticalAlignment="Top">
+        <Menu Grid.ColumnSpan="3" Height="20" VerticalAlignment="Top">
             <MenuItem Header="Игра" ItemContainerStyle="{StaticResource ItemcontainerStyle}">
-                <MenuItem Header="Новая игра"/>
+                <MenuItem Header="Новая игра" Click="StartNewGame_Click"/>
                 <Separator />
-                <MenuItem Header="Новичок" IsCheckable="True" Command="{Binding ChooseDifficulty}" CommandParameter="{x:Static local:DifficultyLevel.Easy}" IsChecked="True"/>
-                <MenuItem Header="Любитель" IsCheckable="True" Command="{Binding ChooseDifficulty}" CommandParameter="{x:Static local:DifficultyLevel.Normal}"/>
-                <MenuItem Header="Профессионал" IsCheckable="True" Command="{Binding ChooseDifficulty}" CommandParameter="{x:Static local:DifficultyLevel.Hard}"/>
-                <Separator />
-                <MenuItem Header="Выход" ></MenuItem>
+                <MenuItem Header="Новичек" IsCheckable="True" Click="ChangeDifficulty_Click" Tag="{x:Static local:DifficultyLevel.Easy}" IsChecked="True"/>
+                <MenuItem Header="Любитель" IsCheckable="True" Click="ChangeDifficulty_Click" Tag="{x:Static local:DifficultyLevel.Normal}"/>
+                <MenuItem Header="Профессионал" IsCheckable="True" Click="ChangeDifficulty_Click" Tag="{x:Static local:DifficultyLevel.Hard}"/>
+                <!--<Separator />
+                <MenuItem Header="Выход" ></MenuItem>-->
             </MenuItem>
-            <MenuItem Header="Справка" ></MenuItem>
+            <!--<MenuItem Header="Справка" ></MenuItem>-->
         </Menu>
 
-        <StackPanel Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <RadioButton x:Name="EasyRB" GroupName="DifficultyLevel" Content="Easy" IsChecked="True"/>
-            <RadioButton x:Name="NormalRB" GroupName="DifficultyLevel" Content="Normal" />
-            <RadioButton x:Name="HardRB" GroupName="DifficultyLevel" Content="Hard" />
-            <RadioButton x:Name="ImpossibleRB" GroupName="DifficultyLevel" Content="Impossible" />
-            <RadioButton x:Name="JokeRB" GroupName="DifficultyLevel" Content="Joke"/>
-        </StackPanel>
-
-        <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Click="StartNewGame_Click" Width="40" Height="40">Start</Button>
-
-        <StackPanel Grid.Row="1" Grid.Column="2" DataContext="{Binding Minesweeper}">
-            <TextBlock  Text="{Binding MinesCount, UpdateSourceTrigger=PropertyChanged}"/>
-        </StackPanel>
-
+        <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Click="StartNewGame_Click" Width="80" Height="40" Content="New Game"/>
 
         <Grid Grid.Row="2" Grid.ColumnSpan="3" Margin="8">
             <Border BorderThickness="1" BorderBrush="CadetBlue" Background="DarkGray">
